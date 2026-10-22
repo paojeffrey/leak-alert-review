@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leak Alert Review · Westlake</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root { --dark:#0B2026; --teal:#1B5162; --red:#FF3621; --green:#00A972; --muted:#618794;
+          --card:#F9F7F4; --line:#EEEDE9; --redbg:#FFE7E2; --greenbg:#E3F4EC; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:'DM Sans',system-ui,sans-serif; color:var(--dark); background:#fff; }
+  header { display:flex; align-items:center; justify-content:space-between; padding:16px 32px;
+           border-bottom:1px solid var(--line); position:sticky; top:0; background:#fff; z-index:5; }
+  header h1 { font-size:20px; margin:0; } header h1 span { color:var(--red); }
+  .who { font-size:13px; color:var(--muted); }
+  main { padding:24px 32px 48px; max-width:1400px; margin:0 auto; }
+  .tabs, .filters { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .tabs { margin-bottom:16px; }
+  .chip { border:1px solid var(--line); background:#fff; border-radius:999px; padding:7px 14px; font:inherit;
+          font-size:14px; cursor:pointer; color:var(--dark); }
+  .chip.on { background:var(--teal); border-color:var(--teal); color:#fff; }
+  .tab { font-size:15px; font-weight:700; }
+  .label { font-size:12px; font-weight:700; color:var(--muted); letter-spacing:.04em; margin:0 4px 0 12px; }
+  .stats { display:flex; gap:12px; margin:18px 0 22px; flex-wrap:wrap; }
+  .stat { background:var(--card); border-radius:12px; padding:12px 18px; min-width:150px; }
+  .stat b { display:block; font-size:26px; } .stat small { color:var(--muted); font-size:13px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(560px,1fr)); gap:18px; }
+  .card { background:var(--card); border-radius:16px; padding:18px; border:2px solid transparent; }
+  .card.ai-leak { border-color:var(--redbg); }
+  .top { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:12px; }
+  .top h3 { margin:0; font-size:17px; } .top small { color:var(--muted); }
+  .badge { font-size:12px; font-weight:700; border-radius:999px; padding:4px 10px; white-space:nowrap; }
+  .b-leak { background:var(--red); color:#fff; } .b-no { background:var(--line); color:var(--teal); }
+  .imgs { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .imgs figure { margin:0; } .imgs figcaption { font-size:12px; font-weight:700; color:var(--muted); margin-bottom:4px; }
+  .imgs img { width:100%; aspect-ratio:16/10; object-fit:cover; border-radius:10px; background:var(--line); cursor:zoom-in; }
+  .noref { aspect-ratio:16/10; border-radius:10px; background:var(--line); display:flex; align-items:center;
+           justify-content:center; text-align:center; font-size:13px; color:var(--muted); padding:12px; }
+  .evidence { font-size:14px; margin:12px 0 4px; line-height:1.45; }
+  .meta { font-size:12px; color:var(--muted); }
+  .actions { display:flex; gap:8px; margin-top:14px; align-items:center; flex-wrap:wrap; }
+  .actions input { flex:1; min-width:180px; padding:9px 12px; border:1px solid var(--line); border-radius:10px; font:inherit; font-size:14px; }
+  .btn { border:0; border-radius:10px; padding:10px 16px; font:inherit; font-weight:700; font-size:14px; cursor:pointer; }
+  .btn:disabled { opacity:.5; cursor:wait; }
+  .btn-leak { background:var(--red); color:#fff; } .btn-no { background:var(--teal); color:#fff; }
+  .btn-link { background:none; color:var(--teal); text-decoration:underline; padding:6px; }
+  .decided { margin-top:14px; border-radius:10px; padding:10px 14px; font-size:14px; display:flex;
+             justify-content:space-between; align-items:center; gap:8px; }
+  .d-leak { background:var(--redbg); } .d-no { background:var(--greenbg); }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th, td { text-align:left; padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { background:var(--teal); color:#fff; font-weight:700; position:sticky; top:66px; }
+  .empty { color:var(--muted); padding:40px; text-align:center; }
+  #lightbox { position:fixed; inset:0; background:rgba(11,32,38,.85); display:none; align-items:center;
+              justify-content:center; z-index:10; cursor:zoom-out; }
+  #lightbox img { max-width:94vw; max-height:92vh; border-radius:8px; }
+  .plants { display:grid; grid-template-columns:repeat(auto-fill,minmax(360px,1fr)); gap:18px; margin-top:18px; }
+  .plant { background:var(--card); border-radius:16px; padding:22px; cursor:pointer; border:2px solid transparent; text-align:left; font:inherit; color:inherit; }
+  .plant:hover { border-color:var(--teal); }
+  .plant h2 { margin:0 0 4px; font-size:20px; } .plant p { margin:0 0 16px; color:var(--muted); font-size:14px; }
+  .plant .count { font-size:44px; font-weight:700; color:var(--red); line-height:1; }
+  .plant .count.zero { color:var(--green); }
+  .plant .sub { font-size:14px; margin-top:6px; } .plant .go { margin-top:16px; font-weight:700; color:var(--teal); font-size:14px; }
+  .intro h2 { font-size:26px; margin:6px 0 4px; } .intro p { color:var(--muted); margin:0; }
+  .crumb { display:flex; align-items:center; gap:10px; margin-bottom:12px; font-size:14px; }
+  .banner { display:flex; align-items:center; gap:16px; background:var(--redbg); border-radius:14px; padding:16px 20px; margin-bottom:18px; }
+  .banner.clear { background:var(--greenbg); }
+  .banner .n { font-size:38px; font-weight:700; color:var(--red); line-height:1; } .banner.clear .n { color:var(--green); }
+  .banner .t { font-size:16px; } .banner .t b { font-size:18px; }
+  .err { background:var(--redbg); color:var(--dark); padding:12px 16px; border-radius:10px; margin-bottom:16px; display:none; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Leak Alert Review <span>·</span> Westlake</h1>
+  <div class="who" id="who">Signed in…</div>
+</header>
+<main>
+  <div class="err" id="err"></div>
+
+  <section id="plantpick">
+    <div class="intro"><h2>Select a plant</h2><p>Choose a plant to review its leak alerts.</p></div>
+    <div class="plants" id="plants"><div class="empty">Loading plants…</div></div>
+  </section>
+
+  <section id="plantview" style="display:none">
+  <div class="crumb"><button class="btn btn-link" data-back="1">← All plants</button><span class="meta" id="crumbname"></span></div>
+  <div class="banner" id="banner"></div>
+  <div class="tabs">
+    <button class="chip tab on" data-tab="review">Alerts to review</button>
+    <button class="chip tab" data-tab="log">Decision log</button>
+  </div>
+
+  <section id="review">
+    <div class="filters">
+      <span class="label">AI VERDICT</span>
+      <button class="chip on" data-ai="leak">Flagged as leak</button>
+      <button class="chip" data-ai="all">All candidates</button>
+      <span class="label">STATUS</span>
+      <button class="chip on" data-status="pending">Pending</button>
+      <button class="chip" data-status="reviewed">Reviewed</button>
+      <button class="chip" data-status="all">All</button>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="grid" id="grid"><div class="empty">Loading alerts…</div></div>
+  </section>
+
+  <section id="log" style="display:none">
+    <p class="meta">Every decision is kept (append-only). The most recent decision per alert is its current label.</p>
+    <table><thead><tr><th>When (CT)</th><th>Who</th><th>Point of interest</th><th>Decision</th><th>Comment</th><th>Image</th></tr></thead>
+      <tbody id="logbody"><tr><td colspan="6" class="empty">Loading…</td></tr></tbody></table>
+  </section>
+  </section>
+</main>
+<div id="lightbox"><img alt=""></div>
+
+<script>
+const state = { plants: [], plant: null, alerts: [], ai: 'leak', status: 'pending' };
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const img = f => `api/images/${encodeURIComponent(f)}`;
+const label = d => d === 'leak' ? 'Confirmed leak' : 'Not a leak';
+
+async function api(path, opts) {
+  const r = await fetch(path, opts);
+  if (!r.ok) { const t = await r.text(); throw new Error(`${r.status}: ${t}`); }
+  return r.json();
+}
+function showErr(e) { const el = document.getElementById('err'); el.textContent = 'Error — ' + e.message; el.style.display = 'block'; }
+
+function plural(n, word) { return `${n} ${word}${n === 1 ? '' : 's'}`; }
+
+function renderBanner() {
+  const a = state.alerts, flagged = a.filter(x => x.ai_verdict === 'leak').length;
+  const pending = a.filter(x => x.ai_verdict === 'leak' && !x.decision).length;
+  const b = document.getElementById('banner');
+  b.className = 'banner' + (pending ? '' : ' clear');
+  b.innerHTML = `<div class="n">${flagged}</div><div class="t"><b>${flagged === 1 ? 'leak alert' : 'leak alerts'} at ${esc(state.plant.plant_name)}</b><br>
+    ${pending ? `${plural(pending, 'alert')} awaiting operator review` : 'All flagged alerts have been reviewed'}</div>`;
+}
+
+function renderPlants() {
+  const el = document.getElementById('plants');
+  if (!state.plants.length) { el.innerHTML = '<div class="empty">No plants configured.</div>'; return; }
+  el.innerHTML = state.plants.map(p => `<button class="plant" data-plant="${esc(p.plant_id)}">
+      <h2>${esc(p.plant_name)}</h2><p>${esc(p.description || '')} · ${plural(p.points_of_interest, 'point')} of interest</p>
+      <div class="count ${p.leak_alerts ? '' : 'zero'}">${p.leak_alerts}</div>
+      <div class="sub"><b>${p.leak_alerts === 1 ? 'leak alert' : 'leak alerts'}</b> · ${p.awaiting_review} awaiting review · ${p.confirmed_leaks} confirmed</div>
+      <div class="go">Review alerts →</div></button>`).join('');
+}
+
+async function loadPlants() {
+  try { state.plants = await api('api/plants'); renderPlants(); } catch (e) { showErr(e); }
+}
+
+function showPicker() {
+  state.plant = null; history.replaceState(null, '', location.pathname + location.search);
+  document.getElementById('plantpick').style.display = ''; document.getElementById('plantview').style.display = 'none';
+  loadPlants();
+}
+
+async function selectPlant(id) {
+  if (!state.plants.length) await loadPlants();
+  const p = state.plants.find(x => x.plant_id === id);
+  if (!p) return showPicker();
+  state.plant = p; state.alerts = []; location.hash = 'plant=' + encodeURIComponent(id);
+  document.getElementById('crumbname').textContent = p.plant_name;
+  document.getElementById('plantpick').style.display = 'none'; document.getElementById('plantview').style.display = '';
+  document.querySelectorAll('[data-tab]').forEach(b => b.classList.toggle('on', b.dataset.tab === 'review'));
+  document.getElementById('review').style.display = ''; document.getElementById('log').style.display = 'none';
+  document.getElementById('banner').innerHTML = '<div class="t">Loading alerts…</div>';
+  document.getElementById('grid').innerHTML = '<div class="empty">Loading alerts…</div>';
+  await loadAlerts();
+}
+
+function render() {
+  renderBanner();
+  const a = state.alerts;
+  const pending = a.filter(x => x.ai_verdict === 'leak' && !x.decision).length;
+  const conf = a.filter(x => x.decision === 'leak').length;
+  const rej = a.filter(x => x.decision === 'no_leak').length;
+  document.getElementById('stats').innerHTML = `
+    <div class="stat"><b>${a.filter(x => x.ai_verdict === 'leak').length}</b><small>AI-flagged leaks</small></div>
+    <div class="stat"><b style="color:var(--red)">${pending}</b><small>Flagged, awaiting review</small></div>
+    <div class="stat"><b>${conf}</b><small>Confirmed leaks</small></div>
+    <div class="stat"><b>${rej}</b><small>Marked not a leak</small></div>
+    <div class="stat"><b>${a.length}</b><small>Candidates from stage 1</small></div>`;
+
+  const rows = a.filter(x => (state.ai === 'all' || x.ai_verdict === 'leak') &&
+    (state.status === 'all' || (state.status === 'pending' ? !x.decision : !!x.decision)));
+  const grid = document.getElementById('grid');
+  if (!rows.length) { grid.innerHTML = '<div class="empty">Nothing here — no alerts match these filters.</div>'; return; }
+  grid.innerHTML = rows.map(x => {
+    const aiLeak = x.ai_verdict === 'leak';
+    const conf = x.ai_confidence != null ? ` · ${Math.round(x.ai_confidence * 100)}%` : '';
+    const ref = x.reference_filename
+      ? `<figure><figcaption>REFERENCE (KNOWN DRY)</figcaption><img src="${img(x.reference_filename)}" loading="lazy" alt="reference"></figure>`
+      : `<figure><figcaption>REFERENCE</figcaption><div class="noref">No reference image — this spot has no history yet</div></figure>`;
+    const decided = x.decision ? `
+      <div class="decided ${x.decision === 'leak' ? 'd-leak' : 'd-no'}">
+        <div><b>${label(x.decision)}</b> by ${esc(x.decided_by)} · ${esc(x.decided_at_ct)}${x.comment ? `<br><span class="meta">“${esc(x.comment)}”</span>` : ''}</div>
+        <button class="btn btn-link" data-change="${esc(x.alert_id)}">Change</button>
+      </div>` : '';
+    const actions = `
+      <div class="actions" id="act-${esc(x.alert_id)}" style="${x.decision ? 'display:none' : ''}">
+        <input placeholder="Optional comment (e.g. puddle under valve V-12)" maxlength="500">
+        <button class="btn btn-leak" data-decide="leak" data-id="${esc(x.alert_id)}">Confirm leak</button>
+        <button class="btn btn-no" data-decide="no_leak" data-id="${esc(x.alert_id)}">Not a leak</button>
+      </div>`;
+    return `<div class="card ${aiLeak ? 'ai-leak' : ''}">
+      <div class="top"><div><h3>Point of interest ${esc(x.poi)}</h3><small>Captured ${esc(x.captured_at_ct)}</small></div>
+        <span class="badge ${aiLeak ? 'b-leak' : 'b-no'}">AI: ${aiLeak ? 'Leak' : 'No leak'}${conf}</span></div>
+      <div class="imgs"><figure><figcaption>CURRENT IMAGE</figcaption><img src="${img(x.filename)}" loading="lazy" alt="current"></figure>${ref}</div>
+      <p class="evidence">${esc(x.ai_evidence)}</p>
+      <div class="meta">Change type: ${esc(x.change_type || '—')} · Change score: ${x.stage1_score != null ? x.stage1_score.toFixed(2) : '—'}</div>
+      ${decided}${actions}</div>`;
+  }).join('');
+}
+
+async function loadAlerts() {
+  try { state.alerts = await api('api/alerts?plant_id=' + encodeURIComponent(state.plant.plant_id)); render(); } catch (e) { showErr(e); }
+}
+
+async function loadLog() {
+  try {
+    const rows = await api('api/decisions?plant_id=' + encodeURIComponent(state.plant.plant_id));
+    document.getElementById('logbody').innerHTML = rows.length ? rows.map(r => `<tr>
+      <td>${esc(r.decided_at_ct)}</td><td>${esc(r.decided_by)}</td><td>${esc(r.poi)}</td>
+      <td><span class="badge ${r.decision === 'leak' ? 'b-leak' : 'b-no'}">${label(r.decision)}</span></td>
+      <td>${esc(r.comment || '')}</td><td class="meta">${esc((r.filename || '').slice(0, 13))}…</td></tr>`).join('')
+      : '<tr><td colspan="6" class="empty">No decisions yet.</td></tr>';
+  } catch (e) { showErr(e); }
+}
+
+async function decide(id, decision, btn) {
+  const box = document.getElementById('act-' + id);
+  const comment = box.querySelector('input').value;
+  if (!confirm(`Record "${label(decision)}" for this alert?`)) return;
+  box.querySelectorAll('button').forEach(b => b.disabled = true);
+  try {
+    const r = await api(`api/alerts/${encodeURIComponent(id)}/decision`, {
+      method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({decision, comment}) });
+    Object.assign(state.alerts.find(x => x.alert_id === id), {
+      decision: r.decision, decided_by: r.decided_by, decided_at_ct: r.decided_at_ct, comment: r.comment });
+    render();
+  } catch (e) { showErr(e); box.querySelectorAll('button').forEach(b => b.disabled = false); }
+}
+
+document.addEventListener('click', e => {
+  const t = e.target;
+  const plantBtn = t.closest('[data-plant]');
+  if (plantBtn) return selectPlant(plantBtn.dataset.plant);
+  if (t.dataset.back) return showPicker();
+  if (t.dataset.decide) return decide(t.dataset.id, t.dataset.decide, t);
+  if (t.dataset.change) { document.getElementById('act-' + t.dataset.change).style.display = 'flex'; t.parentElement.style.display = 'none'; return; }
+  if (t.dataset.ai) { state.ai = t.dataset.ai; document.querySelectorAll('[data-ai]').forEach(b => b.classList.toggle('on', b === t)); return render(); }
+  if (t.dataset.status) { state.status = t.dataset.status; document.querySelectorAll('[data-status]').forEach(b => b.classList.toggle('on', b === t)); return render(); }
+  if (t.dataset.tab) {
+    document.querySelectorAll('[data-tab]').forEach(b => b.classList.toggle('on', b === t));
+    document.getElementById('review').style.display = t.dataset.tab === 'review' ? '' : 'none';
+    document.getElementById('log').style.display = t.dataset.tab === 'log' ? '' : 'none';
+    if (t.dataset.tab === 'log') loadLog();
+    return;
+  }
+  if (t.tagName === 'IMG' && t.closest('.imgs')) { const lb = document.getElementById('lightbox'); lb.querySelector('img').src = t.src + '?w_px=1920'; lb.style.display = 'flex'; return; }
+  if (t.closest('#lightbox')) document.getElementById('lightbox').style.display = 'none';
+});
+
+api('api/me').then(r => document.getElementById('who').textContent = 'Signed in as ' + r.user).catch(showErr);
+const m = location.hash.match(/plant=([^&]+)/);
+if (m) selectPlant(decodeURIComponent(m[1])); else loadPlants();
+</script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+fastapi>=0.110
+uvicorn>=0.29
+databricks-sdk>=0.40
+pydantic>=2
+pillow>=10

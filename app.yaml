@@ -1,0 +1,17 @@
+command:
+  - "python"
+  - "-m"
+  - "uvicorn"
+  - "app:app"
+  - "--host"
+  - "0.0.0.0"
+  - "--port"
+  - "8000"
+
+env:
+  - name: DATABRICKS_WAREHOUSE_ID
+    valueFrom: sql-warehouse
+  - name: LEAK_SCHEMA
+    value: stable_classic_wg38i9_catalog.westlake_gas_leakage_2
+  - name: IMAGE_VOLUME_PATH
+    value: /Volumes/stable_classic_wg38i9_catalog/westlake_gas_leakage_2/documents/OneDrive_1_10-13-2026
